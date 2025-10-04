@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Página de Teste - Flask</title>
+    <title>Página de Teste - Flask + Supabase</title>
     <style>
         * {
             margin: 0;
@@ -20,7 +20,7 @@
         }
         
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 60px 20px;
         }
@@ -204,6 +204,32 @@
             border-top: 1px solid #d2d2d7;
         }
         
+        .form-group {
+            margin: 15px 0;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #1d1d1f;
+        }
+        
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d2d2d7;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+        
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #007aff;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+        
         @media (max-width: 768px) {
             .container {
                 padding: 40px 16px;
@@ -231,9 +257,9 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🧪 Página de Teste</h1>
-            <p>Teste todas as funcionalidades do seu servidor Flask local</p>
-            <div class="status-indicator">Ambiente Virtual Ativo</div>
+            <h1>🧪 Página de Teste - Supabase</h1>
+            <p>Teste todas as funcionalidades do seu servidor Flask com Supabase</p>
+            <div class="status-indicator">Ambiente Virtual + Supabase</div>
         </div>
         
         <div class="test-grid">
@@ -249,8 +275,8 @@
                 <div class="links">
                     <a href="/">🏠 Página Inicial</a>
                     <a href="/api/info">📊 API Info</a>
-                    <a href="/api/files">📁 Lista de Arquivos</a>
-                    <a href="/api/time">⏰ Hora Atual</a>
+                    <a href="/api/users">👥 Usuários</a>
+                    <a href="/api/posts">📝 Posts</a>
                 </div>
             </div>
             
@@ -266,15 +292,49 @@
                 <p>Teste as APIs do Flask com requisições AJAX:</p>
                 <div class="api-buttons">
                     <button onclick="testAPI('/api/info')" class="btn">📊 API Info</button>
-                    <button onclick="testAPI('/api/files')" class="btn">📁 API Files</button>
-                    <button onclick="testAPI('/api/time')" class="btn">⏰ API Time</button>
+                    <button onclick="testAPI('/api/users')" class="btn">👥 API Users</button>
+                    <button onclick="testAPI('/api/posts')" class="btn">📝 API Posts</button>
                     <button onclick="testAPI('/api/status')" class="btn">📈 API Status</button>
                 </div>
                 <div id="api-result" class="result" style="display: none;"></div>
             </div>
             
             <div class="test-card">
-                <h3>🔧 Teste 5: Ambiente Virtual</h3>
+                <h3>👥 Teste 5: Criar Usuário</h3>
+                <p>Teste a criação de usuários no Supabase:</p>
+                <div class="form-group">
+                    <label for="userName">Nome:</label>
+                    <input type="text" id="userName" placeholder="Digite o nome">
+                </div>
+                <div class="form-group">
+                    <label for="userEmail">Email:</label>
+                    <input type="email" id="userEmail" placeholder="Digite o email">
+                </div>
+                <button onclick="createUser()" class="btn">Criar Usuário</button>
+                <div id="user-result" class="result" style="display: none;"></div>
+            </div>
+            
+            <div class="test-card">
+                <h3>📝 Teste 6: Criar Post</h3>
+                <p>Teste a criação de posts no Supabase:</p>
+                <div class="form-group">
+                    <label for="postTitle">Título:</label>
+                    <input type="text" id="postTitle" placeholder="Digite o título">
+                </div>
+                <div class="form-group">
+                    <label for="postContent">Conteúdo:</label>
+                    <textarea id="postContent" placeholder="Digite o conteúdo" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="postAuthor">ID do Autor:</label>
+                    <input type="number" id="postAuthor" placeholder="Digite o ID do autor">
+                </div>
+                <button onclick="createPost()" class="btn">Criar Post</button>
+                <div id="post-result" class="result" style="display: none;"></div>
+            </div>
+            
+            <div class="test-card">
+                <h3>🔧 Teste 7: Ambiente Virtual</h3>
                 <p>Verifique informações sobre o ambiente Python:</p>
                 <button onclick="checkEnvironment()" class="btn btn-secondary">Verificar Ambiente</button>
                 <div id="env-result" class="result" style="display: none;"></div>
@@ -320,6 +380,99 @@ ${error.message}`;
             }
         }
 
+        async function createUser() {
+            const result = document.getElementById('user-result');
+            const name = document.getElementById('userName').value;
+            const email = document.getElementById('userEmail').value;
+            
+            if (!name || !email) {
+                result.style.display = 'block';
+                result.className = 'result error';
+                result.innerHTML = '❌ Nome e email são obrigatórios!';
+                return;
+            }
+            
+            result.style.display = 'block';
+            result.className = 'result';
+            result.innerHTML = '<p>🔄 Criando usuário...</p>';
+            
+            try {
+                const response = await fetch('/api/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name, email })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    result.className = 'result success';
+                    result.innerHTML = `✅ Usuário criado com sucesso!
+
+${JSON.stringify(data, null, 2)}`;
+                } else {
+                    result.className = 'result error';
+                    result.innerHTML = `❌ Erro ao criar usuário:
+
+${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = `❌ Erro na requisição:
+
+${error.message}`;
+            }
+        }
+
+        async function createPost() {
+            const result = document.getElementById('post-result');
+            const title = document.getElementById('postTitle').value;
+            const content = document.getElementById('postContent').value;
+            const authorId = document.getElementById('postAuthor').value;
+            
+            if (!title || !content || !authorId) {
+                result.style.display = 'block';
+                result.className = 'result error';
+                result.innerHTML = '❌ Título, conteúdo e ID do autor são obrigatórios!';
+                return;
+            }
+            
+            result.style.display = 'block';
+            result.className = 'result';
+            result.innerHTML = '<p>🔄 Criando post...</p>';
+            
+            try {
+                const response = await fetch('/api/posts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ title, content, author_id: parseInt(authorId) })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    result.className = 'result success';
+                    result.innerHTML = `✅ Post criado com sucesso!
+
+${JSON.stringify(data, null, 2)}`;
+                } else {
+                    result.className = 'result error';
+                    result.innerHTML = `❌ Erro ao criar post:
+
+${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = `❌ Erro na requisição:
+
+${error.message}`;
+            }
+        }
+
         async function checkEnvironment() {
             const result = document.getElementById('env-result');
             result.style.display = 'block';
@@ -330,12 +483,13 @@ ${error.message}`;
                 const response = await fetch('/api/info');
                 const data = await response.json();
                 result.className = 'result success';
-                result.innerHTML = `✅ Ambiente Flask ativo!
+                result.innerHTML = `✅ Ambiente Flask + Supabase ativo!
 
 Servidor: ${data.servidor}
 Versão: ${data.versao}
 Python: ${data.python_version}
 Flask: ${data.flask_version}
+Supabase: ${data.supabase_connected ? 'Conectado' : 'Desconectado'}
 Diretório: ${data.diretorio}
 Timestamp: ${data.timestamp}`;
             } catch (error) {
